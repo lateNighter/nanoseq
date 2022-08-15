@@ -490,9 +490,9 @@ workflow NANOSEQ{
     /*
      * MODULE: Parse software version numbers
      */
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_software_versions.unique().collectFile()
-    )
+    //CUSTOM_DUMPSOFTWAREVERSIONS (
+    //    ch_software_versions.unique().collectFile()
+    //)
 
     if (!params.skip_multiqc) {
         workflow_summary    = WorkflowNanoseq.paramsSummaryMultiqc(workflow, summary_params)

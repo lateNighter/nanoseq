@@ -125,6 +125,7 @@ include { QCAT                  } from '../modules/local/qcat'
 include { BAM_RENAME            } from '../modules/local/bam_rename'
 include { BAMBU                 } from '../modules/local/bambu'
 include { MULTIQC               } from '../modules/local/multiqc'
+include { PIPELINE_TRANSCRIPTOME_DE } from '../modules/local/pipeline-transcriptome-de.nf'
 
 /*
  * SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -417,7 +418,7 @@ workflow NANOSEQ{
 
     ch_featurecounts_gene_multiqc       = Channel.empty()
     ch_featurecounts_transcript_multiqc = Channel.empty()
-    if (!params.skip_quantification && (params.protocol == 'cDNA' || params.protocol == 'directRNA')) {
+    if (!params.skip_quantification && (params.protocol == 'cDNA' || params.protocol == 'directRNA')) { //TODO
 
         // Check that reference genome and annotation are the same for all samples if perfoming quantification
         // Check if we have replicates and multiple conditions in the input samplesheet
@@ -485,6 +486,49 @@ workflow NANOSEQ{
          * SUBWORKFLOW: RNA_FUSIONS_JAFFAL
          */
         RNA_FUSIONS_JAFFAL( ch_sample, params.jaffal_ref_dir )
+    }
+
+    if (!params.skip_transcriptome_de) {
+
+        /*
+         * SUBWORKFLOW: pipeline-transcriptome-de
+         */
+        ch_sample
+            .map { it -> [ it[2], it[3] ]}
+            .unique()
+            .set { ch_sample_annotation }
+
+        ch_sortbam
+            .take( params.num_control_samples ) 
+            .map { it -> [(it[0].values()[0]) : it[1]]}
+            .reduce { a, b -> a+b }
+            // .collect()
+            .set { ch_control_samples }
+        
+        ch_sortbam
+            .map { it -> [(it[0].values()[0]) : it[1]]} //
+            .buffer( size:params.num_treated_samples, skip:params.num_control_samples )
+            .flatten()
+            .reduce { a, b -> a+b }
+            .set { ch_treated_samples }
+            
+        ch_sortbam
+            .take( params.num_control_samples )
+            .collect{it[1]}
+            .set{ch_control_list}
+        
+        ch_sortbam
+            .map{it[1]}
+            .buffer( size:params.num_treated_samples, skip:params.num_control_samples )
+            .set{ch_treated_list}
+
+        // ch_control_list.view()
+        // ch_treated_list.view()
+        // ch_control_samples.view()
+        // ch_treated_samples.view()
+        
+        //
+        PIPELINE_TRANSCRIPTOME_DE( ch_sample_annotation, ch_control_samples, ch_treated_samples, ch_control_list, ch_treated_list ) //TODO ch_sortbam.collect{ it[1] } 
     }
 
     /*

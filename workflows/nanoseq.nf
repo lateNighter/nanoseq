@@ -512,23 +512,25 @@ workflow NANOSEQ{
             .reduce { a, b -> a+b }
             .set { ch_treated_samples }
             
-        ch_sortbam
-            .take( params.num_control_samples )
-            .collect{it[1]}
-            .set{ch_control_list}
+        // ch_sortbam
+        //     .take( params.num_control_samples )
+        //     .collect{it[1]}
+        //     .set{ch_control_list}
         
-        ch_sortbam
-            .map{it[1]}
-            .buffer( size:params.num_treated_samples, skip:params.num_control_samples )
-            .set{ch_treated_list}
+        // ch_sortbam
+        //     .map{it[1]}
+        //     .buffer( size:params.num_treated_samples, skip:params.num_control_samples )
+        //     .set{ch_treated_list}
 
         // ch_control_list.view()
         // ch_treated_list.view()
         // ch_control_samples.view()
         // ch_treated_samples.view()
-        
-        //
-        PIPELINE_TRANSCRIPTOME_DE( ch_sample_annotation, ch_control_samples, ch_treated_samples, ch_control_list, ch_treated_list ) //TODO ch_sortbam.collect{ it[1] } 
+
+        params.ptd_script = "$projectDir/msc/ptd"
+        // ch_script_dir = Channel.fromPath( 'nanoseq/bin/pipeline-transcriptome-de', type: 'dir', checkIfExists: true, relative: true )
+        // ch_script_dir.view()
+        PIPELINE_TRANSCRIPTOME_DE( ch_sample_annotation, ch_control_samples, ch_treated_samples, ch_sortbam.collect{it[1]}, params.ptd_script )
     }
 
     /*

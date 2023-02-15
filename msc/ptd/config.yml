@@ -1,0 +1,61 @@
+---
+## General pipeline parameters:
+
+# Name of the pipeline:
+pipeline: ""
+# ABSOLUTE path to directory holding the working directory:
+workdir_top: "./ptd_data/"
+# Results directory:
+resdir: "results"
+# Repository URL:
+repo: "https://github.com/nanoporetech/pipeline-transcriptome-de"
+
+## Pipeline-specific parameters:
+
+# Transcriptome fasta
+transcriptome: "ptd_data/chr22_1-17550000.fa"
+
+# Annotation GFF/GTF
+annotation: "ptd_data/chr22_1-17500000.gtf"
+
+# Control samples
+control_samples:
+    C1: "ptd_data/K562_R1.bam"
+    C2: "ptd_data/K562_R2.bam"
+    C3: "ptd_data/K562_R3.bam"
+
+# Treated samples
+treated_samples:
+    IR1: "ptd_data/MCF7_R1.bam"
+    IR2: "ptd_data/MCF7_R2.bam"
+    IR3: "ptd_data/MCF7_R3.bam"
+
+# Minimap2 indexing options
+minimap_index_opts: ""
+
+# Minimap2 mapping options
+minimap2_opts: ""
+
+# Maximum secondary alignments
+maximum_secondary: 100
+
+# Secondary score ratio (-p for minimap2)
+secondary_score_ratio: 1.0
+
+# Salmon library type
+salmon_libtype: "U"
+
+# Count filtering options - customize these according to your experimental design:
+
+# Genes expressed in minimum this many samples
+min_samps_gene_expr: 3
+# Transcripts expressed in minimum this many samples
+min_samps_feature_expr: 1
+# Minimum gene counts
+min_gene_expr: 10
+# Minimum transcript counts
+min_feature_expr: 3
+
+# Threads
+threads: 50
+

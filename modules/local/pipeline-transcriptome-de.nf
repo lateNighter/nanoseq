@@ -1,20 +1,20 @@
 // input_file in samplesheet can be path to directory with BAM file if previously aligned. 
 //then we take some *flag* number of treated and control samples (group - treated/control or num_control_samples in config, input_file - bam, transcriptome - fasta)
 // + name of annotation file like "Homo_sapiens.GRCh38.102.gtf" (contents aren't used)
-// TODO: check samplesheet for the above rules and !skip_transcriptome-de
 // ch_sample // [ sample->"{}_R{}".format(group,replicate), barcode, fasta, gtf, is_transcripts, annotation_str ]
 
 process PIPELINE_TRANSCRIPTOME_DE {
     label 'process_medium'
 
-    container "docker.io/arrid1/pipeline-transcriptome-de:latest"
-    //TODO (from bambu)
+    container "tmp_ptd:latest"
+    containerOptions "-u \$(id -u):\$(id -g)"
+    
     input:
     tuple path(fasta), path(gtf)
     val(control_samples)
     val(treated_samples)
-    path(control_list)
-    path(treated_list)
+    path(samples_list)
+    path(script_dir)
 
     output:
     path "tmp.txt"          , emit: ch_tmp_txt
@@ -31,25 +31,26 @@ process PIPELINE_TRANSCRIPTOME_DE {
     // path "de_analysis/results_dtu.pdf"    , emit: ch_ptd_results_dtu
     // path "de_analysis/results_dtu_stageR.tsv"    , emit: ch_ptd_results_dtu_stageR
     // path "de_analysis/dtu_plots.pdf"    , emit: ch_ptd_dtu_plots
-    
-    // path "versions.yml"             , emit: versions
 
     script:
     """
-    echo "skdnvszf" > tmp.txt
+    workdir=\$PWD
+    cd ptd/
+    snakemake --use-conda -j $task.cpus all > \$workdir/tmp.txt
+    
     """
     // snakemake --use-conda -j $task.cpus all --config control_samples=$control_samples treated_samples=$treated_samples annotation=$gtf transcriptome=$fasta
     // snakemake -n
+    //echo "skdnvszf" > tmp.txt
+    // -s /tmp/repo/pipeline-transcriptome-de/Snakefile
 
-    // run_bambu.r \\
-    //     --tag=. \\
-    //     --ncore=$task.cpus \\
-    //     --annotation=$gtf \\
-    //     --fasta=$fasta $bams
-    // cat <<-END_VERSIONS > versions.yml
-    // "${task.process}":
-    //     r-base: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')
-    //     bioconductor-bambu: \$(Rscript -e "library(bambu); cat(as.character(packageVersion('bambu')))")
-    //     bioconductor-bsgenome: \$(Rscript -e "library(BSgenome); cat(as.character(packageVersion('BSgenome')))")
-    // END_VERSIONS
+    //chmod a+rwX /tmp/repo/
+
+    // workdir=\$PWD
+    // cd ptd/
+    // snakemake --use-conda -j $task.cpus all > \$workdir/tmp.txt
+
+    // cd ptd/.snakemake/conda
+    // ls -lash > \$workdir/tmp.txt
+    
 }

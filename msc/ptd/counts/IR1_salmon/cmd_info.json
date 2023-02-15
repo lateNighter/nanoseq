@@ -1,0 +1,10 @@
+{
+    "salmon_version": "0.14.1",
+    "noErrorModel": [],
+    "threads": "2",
+    "targets": "ptd_data/chr22_1-17550000.fa",
+    "libType": "U",
+    "alignments": "ptd_data/MCF7_R1.bam",
+    "output": "counts/IR1_salmon",
+    "auxDir": "aux_info"
+}
